@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Order</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+    <script>
+        function addItemRow() {
+            var table = document.getElementById("itemsTable").getElementsByTagName('tbody')[0];
+            var rowCount = table.rows.length;
+            var row = table.insertRow(rowCount);
+
+            row.innerHTML = `
+                <td><input type="text" name="items[${rowCount}].productName" class="form-control" required></td>
+                <td><input type="number" name="items[${rowCount}].quantity" class="form-control" min="1" required></td>
+                <td><input type="number" name="items[${rowCount}].price" class="form-control" step="0.01" min="0.01" required></td>
+                <td><button type="button" class="btn btn-danger" onclick="removeItemRow(this)">Remove</button></td>
+            `;
+
+            updateItemIndexes();
+        }
+
+        function removeItemRow(button) {
+            var row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            updateItemIndexes();
+        }
+
+        function updateItemIndexes() {
+            var rows = document.querySelectorAll("#itemsTable tbody tr");
+            rows.forEach((row, index) => {
+                row.querySelectorAll("input").forEach(input => {
+                    var fieldName = input.name.match(/\.(\w+)$/)[1]; // Extracts field name (productName, quantity, price)
+                    input.name = `items[${index}].${fieldName}`;
+                });
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById('orderDate').valueAsDate = new Date(); // Auto-set order date to today
+        });
+    </script>
+</head>
+<body class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center">
+            <h2>Create Order</h2>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/orders}" th:object="${orderDTO}" method="post">
+                <div class="mb-3">
+                    <label for="customerName" class="form-label">Customer Name:</label>
+                    <input type="text" id="customerName" name="customerName" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="orderDate" class="form-label">Order Date:</label>
+                    <input type="date" id="orderDate" name="orderDate" class="form-control" required>
+                </div>
+
+                <h4 class="mt-4">Order Items</h4>
+                <table class="table table-striped table-bordered" id="itemsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" name="items[0].productName" class="form-control" required></td>
+                            <td><input type="number" name="items[0].quantity" class="form-control" min="1" required></td>
+                            <td><input type="number" name="items[0].price" class="form-control" step="0.01" min="0.01" required></td>
+                            <td><button type="button" class="btn btn-danger" onclick="removeItemRow(this)">Remove</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button type="button" class="btn btn-primary" onclick="addItemRow()">
+                    <i class="bi bi-plus-circle"></i> Add Item
+                </button>
+
+                <br><br>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Create Order
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
